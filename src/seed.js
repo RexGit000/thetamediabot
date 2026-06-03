@@ -7,7 +7,7 @@ const Settings = require("./models/Settings");
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
 const SEED_ADMINS = [
-  { telegramId: 1632962204, username: null, isSuperAdmin: true }, // superadmin — first entry
+  { telegramId: 1632962204, username: "@endurenow", isSuperAdmin: true },
   { telegramId: 8486646787, username: null, isSuperAdmin: false },
   { telegramId: 7433937250, username: null, isSuperAdmin: false },
   { telegramId: null, username: "@Cristina0069", isSuperAdmin: false },
@@ -30,10 +30,7 @@ const SEED_SETTINGS = [
   { key: "referralRewardAmount", value: 3 },
 ];
 
-async function seed() {
-  await connectDB();
-
-  // Admins — upsert by telegramId or username (skip if already exists)
+async function seedAdmins() {
   for (const data of SEED_ADMINS) {
     const query = data.telegramId
       ? { telegramId: data.telegramId }
@@ -45,9 +42,34 @@ async function seed() {
       console.log(
         `Seeded admin: ${label}${data.isSuperAdmin ? " (superadmin)" : ""}`,
       );
+      continue;
+    }
+    let changed = false;
+    if (data.username && existing.username !== data.username) {
+      existing.username = data.username;
+      changed = true;
+    }
+    if (data.isSuperAdmin && !existing.isSuperAdmin) {
+      existing.isSuperAdmin = true;
+      changed = true;
+    }
+    if (changed) {
+      await existing.save();
+      console.log(`Updated admin: ${data.telegramId ?? data.username}`);
     } else {
       console.log(`Admin already exists: ${data.telegramId ?? data.username}`);
     }
+  }
+}
+
+async function seed() {
+  await connectDB();
+
+  await seedAdmins();
+  if (process.argv.includes("--admins-only")) {
+    console.log("\nAdmin seed complete.");
+    process.exit(0);
+    return;
   }
 
   // Packages — upsert by stars (keeps existing _id stable for outstanding invoices)
@@ -75,7 +97,11 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
-  console.error("Seed error:", err);
-  process.exit(1);
-});
+module.exports = { seedAdmins };
+
+if (require.main === module) {
+  seed().catch((err) => {
+    console.error("Seed error:", err);
+    process.exit(1);
+  });
+}
