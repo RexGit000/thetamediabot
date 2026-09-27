@@ -7,7 +7,7 @@ async function connectDB() {
     attempt++;
     try {
       await mongoose.connect(process.env.MONGODB_URI, {
-        dbName: process.env.DB_NAME || 'client_rex_thetamedia',
+        dbName: process.env.DB_NAME || 'client_rex_stm_2',
       });
       console.log(`MongoDB connected → DB: ${mongoose.connection.db.databaseName}`);
       return;

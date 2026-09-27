@@ -1,13 +1,13 @@
 require('dotenv').config({ override: true });
 const express  = require('express');
 const connectDB    = require('./db');
-require('./models/Media');
-require('./models/UserbotAccount');
 const Admin        = require('./models/Admin');
 const Settings     = require('./models/Settings');
 const User         = require('./models/User');
 const Order        = require('./models/Order');
-const { adminCache } = require('./cache');
+require('./models/Media');
+require('./models/UserbotAccount');
+const { adminCache }   = require('./cache');
 const botState     = require('./services/botState');
 const bot          = require('./bot');
 const { syncMediaPool } = require('./services/syncService');
@@ -17,7 +17,7 @@ const { deliverWithVerification } = require('./utils/mediaSendObserver');
 
 const SYNC_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
-const PORT = Number(process.env.port || process.env.PORT || 3006);
+const PORT = Number(process.env.port || process.env.PORT || 3004);
 
 process.on('uncaughtException', (err) => {
   console.error('[uncaughtException]', err);
@@ -219,7 +219,7 @@ app.post('/api/payment-success', async (req, res) => {
             }
           },
           adminIdResolver: () => adminCache.getAllSuperAdminIds(),
-          botUsername: process.env.BOT_USERNAME || 'thetamediabot',
+          botUsername: process.env.BOT_USERNAME || 'starstomediabot',
         });
 
         if (result.rememberChanged && user) {
